@@ -1,4 +1,4 @@
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/tbao143/Library-ui/refs/heads/main/Redzhubui"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/takgoo170/ui_source/refs/heads/main/redzhub.ui.luau"))()
 workspace.FallenPartsDestroyHeight = -math.huge
 
 local Window = Library:MakeWindow({
@@ -1498,6 +1498,7 @@ local function houseBanKill()
                         task.wait(0.2)
                         local pedro = Region3.new(game.Players.LocalPlayer.Character.HumanoidRootPart.Position - Vector3.new(30, 30, 30), game.Players.LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(30, 30, 30))
                         local a = workspace:FindPartsInRegion3(pedro, game.Players.LocalPlayer.Character.HumanoidRootPart, math.huge)
+
                         for i, v in pairs(a) do
                             if v.Name == "HumanoidRootPart" then
                                 local b = game:GetService("Players"):FindFirstChild(v.Parent.Name)
