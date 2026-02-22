@@ -1,19 +1,10 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local redzlib = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-local Window = Rayfield:CreateWindow({
-   Name = "Kronus | Blade Ball | Free",
-   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "Kronus",
-   LoadingSubtitle = "by kroniii.",
-   ShowText = "Kronus", -- for mobile users to unhide rayfield, change if you'd like
-   Theme = "ocean", -- Check https://docs.sirius.menu/rayfield/configuration/themes
-
-   ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
-
-   DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
-
-   ConfigurationSaving = {
+local Window = redzlib:MakeWindow({
+   Title = "APEX HUB | Blade Ball",
+   SubTitle = "by Apex",
+	})
+   --[[ConfigurationSaving = {
       Enabled = true,
       FolderName = nil, -- Create a custom folder for your hub/game
       FileName = "Big Hub"
@@ -43,7 +34,7 @@ Rayfield:Notify({
    Duration = 6.5,
    Image = 4483362458,
 })
-
+]]
 local Players = game:GetService('Players')
 local Player = Players.LocalPlayer
 local ContextActionService = game:GetService('ContextActionService')
@@ -782,12 +773,12 @@ local function AutoAbility()
     return false
 end
 
-local PlayerTab = Window:CreateTab("Player")
-local MainTab = Window:CreateTab("Main")
-local InventoryTab = Window:CreateTab("Inventory")
-local MiscTab = Window:CreateTab("Misc")
+local PlayerTab = Window:MakeTab({"Player"})
+local MainTab = Window:MakeTab({"Main"})
+local InventoryTab = Window:MakeTab({"Inventory"})
+local MiscTab = Window:MakeTab({"Misc"})
 
-local MovementSection = PlayerTab:CreateSection("Movement")
+--[[local MovementSection = PlayerTab:CreateSection("Movement")
 local AutoParrySection = MainTab:CreateSection("Auto Parry")
 local SkinsSection = InventoryTab:CreateSection("Skins")
 local HitSoundsSection = MiscTab:CreateSection("Hit Sounds")
@@ -2061,4 +2052,5 @@ MiscTab:CreateSlider({
     Callback = function(Value)
         targetDistance = Value
     end,
+
 })
