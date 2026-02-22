@@ -763,4 +763,15 @@ local HitSoundsSection = MiscTab:AddSection({"Hit SFX"})
 
 ---------- PLAYER TAB ---------
 
-local StrafeSpeed = 36 -- Defaultt-
+local StrafeSpeed = 36 -- Defaultt
+                                                
+-- Speed Slider
+local SpeedSlider = PlayerTab:AddSlider({
+        Name = "Speed",
+        Min = 36,
+        Max = 200, 
+        Increase = 10,
+        Default = 36,
+        Callback = function(v)
+        StrafeSpeed = v
+})
