@@ -117,7 +117,7 @@ LPH_NO_VIRTUALIZE(function()
             end
         end 
     end
-end)()
+end)
 
 
 LPH_NO_VIRTUALIZE(function()
