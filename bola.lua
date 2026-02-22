@@ -774,4 +774,108 @@ local SpeedSlider = PlayerTab:AddSlider({
         Default = 36,
         Callback = function(v)
         StrafeSpeed = v
+    end
 })
+
+-- Speed Toggle
+local SpeedToggle = PlayerTab:AddToggle({
+            Name = "Enable Speed",
+            Description = "Enable/Disable Toggle for Speed.",
+            Callback = function(Value)
+               Connections_Manager = Connections_Manager or {}
+        local RunService = game:GetService("RunService")
+        local Player = game.Players.LocalPlayer
+
+        if Value then
+            if not Connections_Manager['Strafe'] then
+                Connections_Manager['Strafe'] = RunService.PreSimulation:Connect(function()
+                    local character = Player.Character
+                    if character and character:FindFirstChild("Humanoid") then
+                        character.Humanoid.WalkSpeed = StrafeSpeed
+                    end
+                end)
+            end
+        else
+            if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+                Player.Character.Humanoid.WalkSpeed = 36
+            end
+
+            if Connections_Manager['Strafe'] then
+                Connections_Manager['Strafe']:Disconnect()
+                Connections_Manager['Strafe'] = nil
+            end
+        end
+    end,
+})         
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local noSlowConnection = nil
+local stateDisablers = {}
+local speedEnforcer = nil
+
+local function enableNoSlow()
+	local character = player.Character or player.CharacterAdded:Wait()
+	local humanoid = character:WaitForChild("Humanoid")
+
+	-- Disable states that can cause slowdown
+	local statesToDisable = {
+		Enum.HumanoidStateType.Swimming,
+		Enum.HumanoidStateType.Seated,
+		Enum.HumanoidStateType.Climbing,
+		Enum.HumanoidStateType.PlatformStanding
+	}
+	for _, state in ipairs(statesToDisable) do
+		humanoid:SetStateEnabled(state, false)
+		stateDisablers[state] = true
+	end
+
+	-- Remove potential interfering values
+	for _, v in pairs(humanoid:GetDescendants()) do
+		if v:IsA("NumberValue") or v:IsA("IntValue") or v:IsA("ObjectValue") then
+			v:Destroy()
+		end
+	end
+
+	-- Set speed immediately
+	humanoid.WalkSpeed = 36
+
+	-- Re-enforce speed if changed
+	noSlowConnection = humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+		if humanoid.WalkSpeed ~= 36 then
+			humanoid.WalkSpeed = 36
+		end
+	end)
+
+	-- Continuous check every frame
+	speedEnforcer = RunService.RenderStepped:Connect(function()
+		if humanoid and humanoid.WalkSpeed ~= 36 then
+			humanoid.WalkSpeed = 36
+		end
+	end)
+end
+
+local function disableNoSlow()
+	local character = player.Character
+	if not character then return end
+
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		-- Re-enable states
+		for state, _ in pairs(stateDisablers) do
+			humanoid:SetStateEnabled(state, true)
+		end
+	end
+
+	if noSlowConnection then
+		noSlowConnection:Disconnect()
+		noSlowConnection = nil
+	end
+
+	if speedEnforcer then
+		speedEnforcer:Disconnect()
+		speedEnforcer = nil
+	end
+end
