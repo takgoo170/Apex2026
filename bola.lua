@@ -117,7 +117,7 @@ LPH_NO_VIRTUALIZE(function()
             end
         end 
     end
-end)
+end)()
 
 
 LPH_NO_VIRTUALIZE(function()
@@ -748,11 +748,11 @@ local function AutoAbility()
             end
 
 --------- TABS -------- LINE 750
-local InfoTab:MakeTab({"Info", "info"})
-local MainTab:MakeTab({"Main", "house"})            
-local PlayerTab:MakeTab({"Player", "profile"})
-local InventoryTab:MakeTab({"Inventory", "shopping-cart"})
-local MiscTab:MakeTab({"Misc", "settings"})
+local InfoTab = Window:MakeTab({"Info", "info"})
+local MainTab = Window:MakeTab({"Main", "house"})            
+local PlayerTab = Window:MakeTab({"Player", "profile"})
+local InventoryTab = Window:MakeTab({"Inventory", "shopping-cart"})
+local MiscTab = Window:MakeTab({"Misc", "settings"})
 
 ------- SECTION 1 --------
 local DiscordSection = InfoTab:AddSection({"Discord Community"})
@@ -763,7 +763,7 @@ local HitSoundsSection = MiscTab:AddSection({"Hit SFX"})
 
 ---------- PLAYER TAB ---------
 
---[[local StrafeSpeed = 36 -- Defaultt
+local StrafeSpeed = 36 -- Defaultt
                                                 
 -- Speed Slider
 local SpeedSlider = PlayerTab:AddSlider({
