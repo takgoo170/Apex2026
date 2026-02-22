@@ -13,7 +13,17 @@ local Window = redzlib:MakeWindow({
     Button = { Image = "rbxassetid://73830511104990", BackgroundTransparency = 0 },
     Corner = { CornerRadius = UDim.new(35, 1) },
 })
+-- info tab will be separated from the other tab.
+local InfoTab = Window:MakeTab({"Info", "info"})
+local DiscordSection = InfoTab:AddSection({"Discord Community"})
 
+InfoTab:AddDiscordInvite({
+		Name = "APEX | on top",
+		Description = "Join to the Apex official discord server for more updates!",
+		Logo = "",
+		Invite = "https://discord.gg/uWAYGwbCHV",
+	})
+		
 -- FUNCTIONS:
 local Players = game:GetService('Players')
 local Player = Players.LocalPlayer
@@ -748,7 +758,6 @@ local function AutoAbility()
             end
 
 --------- TABS -------- LINE 750
-local InfoTab = Window:MakeTab({"Info", "info"})
 local MainTab = Window:MakeTab({"Main", "house"})            
 local PlayerTab = Window:MakeTab({"Player", "profile"})
 local InventoryTab = Window:MakeTab({"Inventory", "shopping-cart"})
