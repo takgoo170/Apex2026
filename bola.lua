@@ -781,6 +781,7 @@ local SpeedSlider = PlayerTab:AddSlider({
 local SpeedToggle = PlayerTab:AddToggle({
             Name = "Enable Speed",
             Description = "Enable/Disable Toggle for Speed.",
+			Default = false,
             Callback = function(Value)
                Connections_Manager = Connections_Manager or {}
         local RunService = game:GetService("RunService")
@@ -879,3 +880,200 @@ local function disableNoSlow()
 		speedEnforcer = nil
 	end
 end
+
+local NoSlowToggle = PlayerTab:AddToggle({
+			Name = "No Slow",
+			Description = "Enable/Disable toggle for slow.",
+			Default = false,
+			Callback = function(Value)
+       if Value then
+			enableNoSlow()
+		else
+			disableNoSlow()
+		end
+    end,
+})
+
+local FOVSection = PlayerTab:AddSection({"Camera FOV"})
+
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+
+-- Default FOV
+getgenv().CameraFOV = 70
+getgenv().CameraEnabled = false
+
+-- FOV SLIDER
+local FOVSlider = PlayerTab:AddSlider({
+		Name = "FOV",
+		Min = 50,
+		Max = 120,
+		Increase = 5,
+		Default = 67,
+		Callback = function(Value)
+        getgenv().CameraFOV = Value
+        if getgenv().CameraEnabled then
+            Camera.FieldOfView = Value
+        end
+    end,
+})
+
+local FOVtoggle = PlayerTab:AddToggle({
+		Name = "Enable Camera FOV",
+		Description = "",
+		Default = false,
+		Callback = function(Value)
+        getgenv().CameraEnabled = Value
+
+        if Value then
+            Camera.FieldOfView = getgenv().CameraFOV
+            if not getgenv().FOVLoop then
+                getgenv().FOVLoop = RunService.RenderStepped:Connect(function()
+                    if getgenv().CameraEnabled then
+                        Camera.FieldOfView = getgenv().CameraFOV
+                    end
+                end)
+            end
+        else
+            Camera.FieldOfView = 70
+            if getgenv().FOVLoop then
+                getgenv().FOVLoop:Disconnect()
+                getgenv().FOVLoop = nil
+            end
+        end
+    end,
+})
+
+local AutoParryToggle = MainTab:AddToggle({
+		Name = "Auto Parry",
+		Description = "",
+		Default = false,
+		Callback = function(Value)
+        if Value then -- changed from 'state' to 'Value'
+             Connections_Manager['Auto Parry'] = RunService.PreSimulation:Connect(function()
+                    local One_Ball = Auto_Parry.Get_Ball()
+                    local Balls = Auto_Parry.Get_Balls()
+
+                    for _, Ball in pairs(Balls) do
+                        if not Ball then return end
+
+                        local Zoomies = Ball:FindFirstChild('zoomies')
+                        if not Zoomies then return end
+
+                        Ball:GetAttributeChangedSignal('target'):Once(function()
+                            Parried = false
+                        end)
+
+                        if Parried then return end
+
+                        local Ball_Target = Ball:GetAttribute('target')
+                        local One_Target = One_Ball:GetAttribute('target')
+                        local Velocity = Zoomies.VectorVelocity
+                        local Distance = (Player.Character.PrimaryPart.Position - Ball.Position).Magnitude
+                        local Ping = game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue() / 10
+                        local Ping_Threshold = math.clamp(Ping / 10, 5, 17)
+
+                        local Speed = Velocity.Magnitude
+                        local cappedSpeedDiff = math.min(math.max(Speed - 9.5, 0), 650)
+                        local speed_divisor_base = 2.4 + cappedSpeedDiff * 0.002
+
+                        local effectiveMultiplier = Speed_Divisor_Multiplier
+                        if getgenv().RandomParryAccuracyEnabled then
+                            if Speed < 200 then
+                                effectiveMultiplier = 0.7 + (math.random(40, 100) - 1) * (0.35 / 99)
+                            else
+                                effectiveMultiplier = 0.7 + (math.random(1, 100) - 1) * (0.35 / 99)
+                            end
+                        end
+
+                        local speed_divisor = speed_divisor_base * effectiveMultiplier
+                        local Parry_Accuracy = Ping_Threshold + math.max(Speed / speed_divisor, 9.5)
+
+                        local Curved = Auto_Parry.Is_Curved()
+
+                        if Ball:FindFirstChild('AeroDynamicSlashVFX') then
+                            Debris:AddItem(Ball.AeroDynamicSlashVFX, 0)
+                            Tornado_Time = tick()
+                        end
+
+                        if Runtime:FindFirstChild('Tornado') then
+                            if (tick() - Tornado_Time) < (Runtime.Tornado:GetAttribute("TornadoTime") or 1) + 0.314159 then
+                                return
+                            end
+                        end
+
+                        if One_Target == tostring(Player) and Curved then return end
+                        if Ball:FindFirstChild("ComboCounter") then return end
+
+                        local Singularity_Cape = Player.Character.PrimaryPart:FindFirstChild('SingularityCape')
+                        if Singularity_Cape then return end 
+
+                        if getgenv().InfinityDetection and Infinity then return end
+                        if getgenv().DeathSlashDetection and deathshit then return end
+                        if getgenv().TimeHoleDetection and timehole then return end
+
+                        if Ball_Target == tostring(Player) and Distance <= Parry_Accuracy then
+                            if getgenv().AutoAbility and AutoAbility() then
+                                return
+                            end
+                        end
+
+                        if Ball_Target == tostring(Player) and Distance <= Parry_Accuracy then
+                            if getgenv().CooldownProtection and cooldownProtection() then
+                                return
+                            end
+
+                            local Parry_Time = os.clock()
+                            local Time_View = Parry_Time - (Last_Parry)
+                            if Time_View > 0.5 then
+                                Auto_Parry.Parry_Animation()
+                            end
+
+                            if getgenv().AutoParryKeypress then
+                                VirtualInputService:SendKeyEvent(true, Enum.KeyCode.F, false, nil)
+                            else
+                                Auto_Parry.Parry(Selected_Parry_Type)
+                            end
+
+                            Last_Parry = Parry_Time
+                            Parried = true
+                        end
+
+                        local Last_Parrys = tick()
+                        repeat
+                            RunService.PreSimulation:Wait()
+                        until (tick() - Last_Parrys) >= 1 or not Parried
+                        Parried = false
+                    end
+                end)
+        else -- moved 'else' to correctly match the 'if Value then'
+            if Connections_Manager['Auto Parry'] then
+                Connections_Manager['Auto Parry']:Disconnect()
+                Connections_Manager['Auto Parry'] = nil
+            end
+        end -- closes 'if Value then'
+   end, -- closes Callback function
+})
+
+local parryTypeMap = {
+    ["Camera"] = "Camera",
+    ["Random"] = "Random",
+    ["Backwards"] = "Backwards",
+    ["Straight"] = "Straight",
+    ["High"] = "High",
+    ["Left"] = "Left",
+    ["Right"] = "Right",
+    ["Random Target"] = "RandomTarget"
+						}
+
+local AutoParryDropdown = MainTab:AddDropdown({
+			Name = "Select Parry Type",
+			Description = "",
+			Options = {"Camera", "Random", "Backwards", "Straight", "High", "Left", "Right", "Random Target"},
+			Default = "Random",
+			Flag = "CurveTypeDropdown",
+            Callback = function(selected)
+       local choice = selected[1]
+       Selected_Parry_Type = parryTypeMap[choice] or choice
+   end,
+})
