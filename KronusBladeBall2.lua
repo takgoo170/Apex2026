@@ -2061,4 +2061,5 @@ MiscTab:CreateSlider({
     Callback = function(Value)
         targetDistance = Value
     end,
+
 })
